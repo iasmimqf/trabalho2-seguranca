@@ -1,6 +1,8 @@
 import time
+import utils
 from Cryptodome.Cipher import AES
 from Cryptodome.Random import get_random_bytes
+from utils import *
 
 def encrypt_ecb(key, message):
     return AES.new(key, AES.MODE_ECB).encrypt(message)
@@ -73,27 +75,6 @@ def decrypt(key, message, mode, iv = None, nonce = None):
 
     raise Exception(f"Invalid mode = {mode}")
 
-def get_mode_name(mode):
-    if mode == AES.MODE_ECB:
-        return "ECB"
-    
-    if mode == AES.MODE_CBC:
-        return "CBC"
-    
-    if mode == AES.MODE_CFB:
-        return "CFB"
-    
-    if mode == AES.MODE_OFB:
-        return "OFB"
-    
-    if mode == AES.MODE_CTR:
-        return "CTR"
-
-    raise Exception(f"Invalid mode = {mode}")
-
-def get_avg(times):
-    return sum(times) / len(times)
-
 def test_mode(key, message, mode, iv = None, nonce = None, debug_texts = False):
 
     print(f"Testing mode: {get_mode_name(mode)}")
@@ -121,8 +102,8 @@ def test_mode(key, message, mode, iv = None, nonce = None, debug_texts = False):
         exec_times.append(dec_times[-1] + enc_times[-1])
 
     if debug_texts:
-        print("Ciphertext:", cipher_text.hex())
-        print("Decrypted message:", dec_text.hex())
+        print_bytes("Ciphertext", cipher_text.hex())
+        print_bytes("Decrypted message", dec_text.hex())
 
     print(f"Average encryption time: {get_avg(enc_times)} ns")
     print(f"Average decryption time: {get_avg(dec_times)} ns")
@@ -135,15 +116,13 @@ key = get_random_bytes(16)
 iv = get_random_bytes(16)
 nonce = get_random_bytes(12)
 
-# TODO: Fazer esse valor ser configurável para os testes do relatorio 
-# message = ("AbcdAbcdAbcdAbcd" * 50).encode()
-# ou apenas pegar um random bytes?
-message = get_random_bytes(64)
+message_len = 10
+message = get_random_bytes(16 * message_len) # tem que ser multiplo do tamanho do bloco (16 bytes)
 
-print("Key:", key.hex())
-print("Message:", message.hex())
-print("IV:", iv.hex())
-print("Nonce:", nonce.hex())
+print_bytes("Key", key.hex())
+print_bytes("Message", message.hex())
+print_bytes("IV", iv.hex())
+print_bytes("Nonce", nonce.hex())
 
 print()
 
