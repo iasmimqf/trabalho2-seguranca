@@ -1,0 +1,10 @@
+# Arquivos temporários
+*.o
+*.out
+*a
+*test
+*sdes
+docs/html
+docs/latex
+.vscode 
+CIC0201-2025-1-TP2.pdf
