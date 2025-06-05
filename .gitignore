@@ -3,6 +3,7 @@
 *.out
 *a
 *test
+S-AES/teste.txt
 *sdes
 docs/html
 docs/latex

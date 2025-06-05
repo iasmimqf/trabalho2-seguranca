@@ -1,5 +1,7 @@
 #include "utils.hpp"
 
 int main(){
-    cout << encript(28523, 42811) << endl;
+    int x = encript(28523, 42811);
+    cout << x << endl;
+    cout << decript(x, 42811) << endl;
 }

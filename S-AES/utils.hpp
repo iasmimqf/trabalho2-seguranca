@@ -4,7 +4,7 @@
 using namespace std;
 
 struct GF_16{
-    int primitive = 19;
+    int primitive = 19;  // x⁴ + x + 1
 
     int add(int x, int y){
         return x ^ y;
@@ -40,15 +40,16 @@ vector<vector<int>> create_nibbles(int n){
     return nibbles;
 }
 
-int substitute_nibble(int nibble){
-    vector<int> sbox_nibble = {9, 4, 10, 11, 13, 1, 8, 5, 6, 2, 0, 3, 12, 14, 15, 7};
-    return sbox_nibble[nibble];
+int substitute_nibble(int nibble, bool decript=false){
+    vector<vector<int>> sbox_nibble = {{9, 4, 10, 11, 13, 1, 8, 5, 6, 2, 0, 3, 12, 14, 15, 7},
+                                       {10, 5, 9, 11, 1, 7, 8, 15, 6, 0, 2, 3, 12, 4, 13, 14}};
+    return sbox_nibble[decript][nibble];
 }
 
-void substitute_nibbles(vector<vector<int>>& nibbles){
+void substitute_nibbles(vector<vector<int>>& nibbles, bool decript=false){
     for(int i=0; i < 2; i++){
         for(int j=0; j < 2; j++){
-            nibbles[i][j] = substitute_nibble(nibbles[i][j]);
+            nibbles[i][j] = substitute_nibble(nibbles[i][j], decript);
         }
     }
 }
@@ -61,13 +62,13 @@ void add_round_key(vector<vector<int>>& nibbles, vector<vector<int>>& key){
     }
 }
 
-vector<vector<int>> mix_columns(vector<vector<int>>& matriz){
+vector<vector<int>> mix_columns(vector<vector<int>>& matriz, bool decript=false){
     vector<vector<int>> resultado(2, vector<int>(2, 0));
-    vector<vector<int>> mult={{1, 4}, {4, 1}};
+    vector<vector<vector<int>>> mult={{{1, 4}, {4, 1}}, {{9, 2}, {2, 9}}};
     for(int i=0; i < 2; i++){
         for(int j=0; j < 2; j++){
             for(int k=0; k < 2; k++){
-                resultado[i][j] ^= GF.mul(mult[i][k], matriz[k][j]);
+                resultado[i][j] ^= GF.mul(mult[decript][i][k], matriz[k][j]);
             }
         }
     }
@@ -134,4 +135,46 @@ int encript(int n, int k){
         }
     }
     return ciphertext;
+}
+
+int decript(int n, int k){
+    vector<vector<int>> nibbles = create_nibbles(n);
+    vector<vector<int>> key0 = create_nibbles(k);
+    vector<vector<int>> key1 = key0;
+    expand_key(key1, 1);
+    vector<vector<int>> key2 = key1;
+    expand_key(key2, 2);
+
+    add_round_key(nibbles, key2);
+    cout << "add_round_key : ";
+    print(nibbles);
+    swap(nibbles[1][0], nibbles[1][1]);
+    cout << "swap_nibbles : ";
+    print(nibbles);
+    substitute_nibbles(nibbles, true);
+    cout << "sub_nibbles : ";
+    print(nibbles);
+    add_round_key(nibbles, key1);
+    cout << "add_round_key : ";
+    print(nibbles);
+    nibbles = mix_columns(nibbles, true);
+    cout << "mix_collumns : ";
+    print(nibbles);
+    swap(nibbles[1][0], nibbles[1][1]);
+    cout << "swap_nibbles : ";
+    print(nibbles);
+    substitute_nibbles(nibbles, true);
+    cout << "sub_nibbles : ";
+    print(nibbles);
+    add_round_key(nibbles, key0);
+    cout << "add_round_key : ";
+    print(nibbles);
+    int plaintext=0;
+    for(int i=0; i < 2; i++){
+        for(int j=0; j < 2; j++){
+            plaintext <<= 4;
+            plaintext |= nibbles[j][i];
+        }
+    }
+    return plaintext;
 }
