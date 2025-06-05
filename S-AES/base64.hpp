@@ -1,8 +1,12 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <map>
 
 using namespace std;
+
+#ifndef BASE64_HPP
+#define BASE64_HPP
 
 string get_binary_string(int n) {
     string result = "";
@@ -40,17 +44,41 @@ string convert_to_base64(vector<int> bytes) {
     output += string(padding, '=');
 
     return output;
-
 }
 
-string convert_to_base64(string str) {
+vector<int> convert_from_base64(string input) {
+    string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    map<char, int> charPos;
 
-    vector<int> bytes;
-
-    for(auto &c : str) {
-        bytes.push_back(c);
+    for(int i = 0; i < (int)alphabet.size(); i++) {
+        charPos[alphabet[i]] = i;
     }
 
-    return convert_to_base64(bytes);
+    string stream = "";
+    vector<int> bytes;
 
+    // Remove padding
+    while (!input.empty() && input.back() == '=') {
+        input.pop_back();
+    }
+
+    for (auto &c : input) {
+        int idx = charPos[c];
+        string bits = "";
+        for (int i = 5; i >= 0; --i) {
+            bits += ((idx >> i) & 1) ? '1' : '0';
+        }
+        stream += bits;
+    }
+
+    // Split into bytes (8 bits)
+    for (int i = 0; i + 8 <= (int)stream.size(); i += 8) {
+        string byte_str = stream.substr(i, 8);
+        int byte = stoi(byte_str, nullptr, 2);
+        bytes.push_back(byte);
+    }
+
+    return bytes;
 }
+
+#endif

@@ -3,6 +3,9 @@
 
 using namespace std;
 
+#ifndef SAES
+#define SAES
+
 /*  This struct implements arithmetic over the finite field GF(2^4)
     using the irreducible polynomial x⁴ + x + 1 (binary: 10011, decimal: 19)
     The field has 16 elements (0–15), and addition/multiplication are
@@ -149,36 +152,35 @@ void print(vector<vector<int>>& key){
     cout << endl;
 }
 
-
 int encript(int n, int k){
     vector<vector<int>> nibbles = split_to_nibbles(n);
     vector<vector<int>> key = split_to_nibbles(k);
     add_round_key(nibbles, key);
-    cout << "add_round_key : ";
-    print(nibbles);
+    // cout << "add_round_key : ";
+    // print(nibbles);
     sub_nibbles(nibbles);
-    cout << "sub_nibbles : ";
-    print(nibbles);
+    // cout << "sub_nibbles : ";
+    // print(nibbles);
     swap(nibbles[1][0], nibbles[1][1]);
-    cout << "swap_nibbles : ";
-    print(nibbles);
+    // cout << "swap_nibbles : ";
+    // print(nibbles);
     nibbles = mix_columns(nibbles);
-    cout << "mix_collumns : ";
-    print(nibbles);
+    // cout << "mix_collumns : ";
+    // print(nibbles);
     expand_key(key, 1);
     add_round_key(nibbles, key);
-    cout << "add_round_key : ";
-    print(nibbles);
+    // cout << "add_round_key : ";
+    // print(nibbles);
     sub_nibbles(nibbles);
-    cout << "sub_nibbles : ";
-    print(nibbles);
+    // cout << "sub_nibbles : ";
+    // print(nibbles);
     swap(nibbles[1][0], nibbles[1][1]);
-    cout << "swap_nibbles : ";
-    print(nibbles);
+    // cout << "swap_nibbles : ";
+    // print(nibbles);
     expand_key(key, 2);
     add_round_key(nibbles, key);
-    cout << "add_round_key : ";
-    print(nibbles);
+    // cout << "add_round_key : ";
+    // print(nibbles);
     int ciphertext=0;
     for(int i=0; i < 2; i++){
         for(int j=0; j < 2; j++){
@@ -198,29 +200,29 @@ int decript(int n, int k){
     expand_key(key2, 2);
 
     add_round_key(nibbles, key2);
-    cout << "add_round_key : ";
-    print(nibbles);
+    // cout << "add_round_key : ";
+    // print(nibbles);
     swap(nibbles[1][0], nibbles[1][1]);
-    cout << "swap_nibbles : ";
-    print(nibbles);
+    // cout << "swap_nibbles : ";
+    // print(nibbles);
     sub_nibbles(nibbles, true);
-    cout << "sub_nibbles : ";
-    print(nibbles);
+    // cout << "sub_nibbles : ";
+    // print(nibbles);
     add_round_key(nibbles, key1);
-    cout << "add_round_key : ";
-    print(nibbles);
+    // cout << "add_round_key : ";
+    // print(nibbles);
     nibbles = mix_columns(nibbles, true);
-    cout << "mix_collumns : ";
-    print(nibbles);
+    // cout << "mix_collumns : ";
+    // print(nibbles);
     swap(nibbles[1][0], nibbles[1][1]);
-    cout << "swap_nibbles : ";
-    print(nibbles);
+    // cout << "swap_nibbles : ";
+    // print(nibbles);
     sub_nibbles(nibbles, true);
-    cout << "sub_nibbles : ";
-    print(nibbles);
+    // cout << "sub_nibbles : ";
+    // print(nibbles);
     add_round_key(nibbles, key0);
-    cout << "add_round_key : ";
-    print(nibbles);
+    // cout << "add_round_key : ";
+    // print(nibbles);
     int plaintext=0;
     for(int i=0; i < 2; i++){
         for(int j=0; j < 2; j++){
@@ -230,3 +232,5 @@ int decript(int n, int k){
     }
     return plaintext;
 }
+
+#endif
