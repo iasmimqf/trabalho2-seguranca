@@ -134,7 +134,7 @@ void expand_key(vector<vector<int>>& key, int round){
     g_function(key1);
 
     // Add round constant: 2^(round+2) reduced mod the primitive polynomial.
-    key1[0] ^= GF.mod(1 << round+2);
+    key1[0] ^= GF.mod(1 << (round+2));
 
     // First new column = previous column XOR g_function result
     for(int i=0; i < 2; i++) key[i][0] ^= key1[i];
