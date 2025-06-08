@@ -13,6 +13,14 @@ public:
 
     static inline const string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
+
+    /*  Converts a vector of bytes (integers 0-255) to a Base64-encoded string.
+        Each byte is first converted to its 8-bit binary representation and concatenated into a bit stream.
+        The bit stream is then split into 6-bit segments, each mapped to a Base64 character using the alphabet.
+        If the final segment is less than 6 bits, it is padded with zeros.
+        The output string is padded with '=' characters to ensure its length is a multiple of 4.
+    */
+
     static string convert_to(const vector<int>& bytes) {
         string output = "", stream = "";
 
@@ -36,6 +44,12 @@ public:
         
         return output;
     }
+
+    /*  Decodes a Base64-encoded string back into a vector of bytes (integers 0-255).
+        Each Base64 character is mapped back to its 6-bit binary value using the alphabet.
+        The resulting bit stream is concatenated and split into 8-bit segments to recover the original bytes.
+        Any '=' padding characters at the end of the input are removed before decoding.
+    */
 
     static vector<int> convert_from(string input) {
         map<char, int> charPos;
