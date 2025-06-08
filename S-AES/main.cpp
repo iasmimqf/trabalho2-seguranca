@@ -13,10 +13,12 @@ int main(){
 
     // cout << ecb_encript("abcd", 42811) << "\n";
 
-    auto k = ecb_encript("AbCdEfGh", 42811);
+    ECB ecb(42811);
+
+    auto k = ecb.encript("AbCdEfGh");
     cout << "encript: " << k << "\n";
 
-    auto r = ecb_decript(k, 42811);
+    auto r = ecb.decript(k);
     cout << "decript: " << r << "\n";
 
     // cout << convert_to_base64(vector<int>{155}) << endl;                // -> mw==
