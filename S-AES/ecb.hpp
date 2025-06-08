@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "s-aes.hpp"
-#include "util.cpp"
+#include "util.hpp"
 #include "base64.hpp"
 
 using namespace std;
