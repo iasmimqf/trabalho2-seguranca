@@ -7,6 +7,19 @@ using namespace std;
 #ifndef SAES_H
 #define SAES_H
 
+/*
+    Implements the S-AES (Simplified AES) encryption and decryption process
+    using a 16-bit key and 16-bit plaintext/ciphertext blocks.
+
+    The cipher includes:
+    - SubNib (S-box substitution for each 4-bit nibble)
+    - ShiftRows (row-wise permutation)
+    - MixColumns (matrix multiplication in GF(2⁴))
+    - AddRoundKey (XOR with round key)
+    - Key expansion based on g-function and round constants
+
+    Supports step-by-step debugging output.
+*/
 class SAES {
 public:
 
@@ -17,36 +30,32 @@ public:
 
     }
 
+    // Encrypts a 16-bit plaintext using the S-AES algorithm and the initialized key
     int encript(int n) {
+        cout << "\n====================== S-AES - Encript ======================\n\n";
+        cout << "Plaintext:         " << toBin(n, 16) << endl;
+        cout << "Initial key:       " << toBin(key, 16) << "\n\n";
 
         vector<vector<int>> nibbles = split_to_nibbles(n);
         vector<vector<int>> key_nibbles = split_to_nibbles(this->key);
+
+        if(debug) cout << "------------- Round 0 --------------\n\n";
         add_round_key(nibbles, key_nibbles);
-        // cout << "add_round_key : ";
-        // print(nibbles);
+
+        if(debug) cout << "------------- Round 1 --------------\n\n";
         sub_nibbles(nibbles);
-        // cout << "sub_nibbles : ";
-        // print(nibbles);
-        swap(nibbles[1][0], nibbles[1][1]);
-        // cout << "swap_nibbles : ";
-        // print(nibbles);
-        nibbles = mix_columns(nibbles);
-        // cout << "mix_collumns : ";
-        // print(nibbles);
+        shift_rows(nibbles);
+        mix_columns(nibbles);
         expand_key(key_nibbles, 1);
         add_round_key(nibbles, key_nibbles);
-        // cout << "add_round_key : ";
-        // print(nibbles);
+
+        if(debug) cout << "------------- Final Round (2) --------------\n\n";
         sub_nibbles(nibbles);
-        // cout << "sub_nibbles : ";
-        // print(nibbles);
-        swap(nibbles[1][0], nibbles[1][1]);
-        // cout << "swap_nibbles : ";
-        // print(nibbles);
+        shift_rows(nibbles);
         expand_key(key_nibbles, 2);
         add_round_key(nibbles, key_nibbles);
-        // cout << "add_round_key : ";
-        // print(nibbles);
+
+        // Converts the nibbles into a 16-bit integer (ciphertext)
         int ciphertext=0;
         for(int i=0; i < 2; i++){
             for(int j=0; j < 2; j++){
@@ -54,42 +63,57 @@ public:
                 ciphertext |= nibbles[j][i];
             }
         }
-        return ciphertext;
 
+        cout << "-------------------------------------------------------------\n\n";
+        cout << "-> Ciphertext\n\n";
+        cout << "Bin:               ";
+        print(nibbles);
+        printf("\nHex:               %X\n", ciphertext);
+        cout << "\n=============================================================\n\n";
+
+        return ciphertext;
     }
 
+    // Decrypts a 16-bit ciphertext using the S-AES algorithm and the initialized key
     int decript(int n){
+        cout << "\n====================== S-AES - Decript ======================\n\n";
+        cout << "Ciphertext:        " << toBin(n, 16) << endl;
+        cout << "Initial key:       " << toBin(key, 16) << "\n\n";
+
         vector<vector<int>> nibbles = split_to_nibbles(n);
+
+        if(debug)
+            cout << "------------- Key Generation --------------\n\n";
         vector<vector<int>> key0_nibbles = split_to_nibbles(this->key);
         vector<vector<int>> key1_nibbles = key0_nibbles;
         expand_key(key1_nibbles, 1);
         vector<vector<int>> key2_nibbles = key1_nibbles;
         expand_key(key2_nibbles, 2);
+        if(debug){
+            cout << "Key0 = ";
+            print(key0_nibbles);
+            cout << "\nKey1 = ";
+            print(key1_nibbles);
+            cout << "\nKey2 = ";
+            print(key2_nibbles);
+            cout << "\n\n";
+        }
 
+        if(debug) cout << "------------- Initial Round (2) --------------\n\n";
         add_round_key(nibbles, key2_nibbles);
-        // cout << "add_round_key : ";
-        // print(nibbles);
-        swap(nibbles[1][0], nibbles[1][1]);
-        // cout << "swap_nibbles : ";
-        // print(nibbles);
+        shift_rows(nibbles);
         sub_nibbles(nibbles, true);
-        // cout << "sub_nibbles : ";
-        // print(nibbles);
+
+        if(debug) cout << "------------- Round 1 --------------\n\n";
         add_round_key(nibbles, key1_nibbles);
-        // cout << "add_round_key : ";
-        // print(nibbles);
-        nibbles = mix_columns(nibbles, true);
-        // cout << "mix_collumns : ";
-        // print(nibbles);
-        swap(nibbles[1][0], nibbles[1][1]);
-        // cout << "swap_nibbles : ";
-        // print(nibbles);
+        mix_columns(nibbles, true);
+        shift_rows(nibbles);
         sub_nibbles(nibbles, true);
-        // cout << "sub_nibbles : ";
-        // print(nibbles);
+
+        if(debug) cout << "------------- Final Round (0) --------------\n\n";
         add_round_key(nibbles, key0_nibbles);
-        // cout << "add_round_key : ";
-        // print(nibbles);
+
+        // Converts the nibbles into a 16-bit integer (plaintext)
         int plaintext=0;
         for(int i=0; i < 2; i++){
             for(int j=0; j < 2; j++){
@@ -97,6 +121,14 @@ public:
                 plaintext |= nibbles[j][i];
             }
         }
+        
+        cout << "-------------------------------------------------------------\n\n";
+        cout << "-> Plaintext\n\n";
+        cout << "Bin:               ";
+        print(nibbles);
+        printf("\nHex:               %X\n", plaintext);
+        cout << "\n=============================================================\n\n";
+
         return plaintext;
     }
 
@@ -125,6 +157,15 @@ private:
         return nibbles;
     }
 
+    void shift_rows(vector<vector<int>>& nibbles){
+        swap(nibbles[1][0], nibbles[1][1]);
+        if(debug){
+            cout << "Shifting rows:\n= ";
+            print(nibbles);
+            cout << "\n\n";
+        }
+    }
+
     // Applies the S-box substitution on a 4-bit nibble
     int apply_sbox(int nibble, bool decript = false){
         // Row 0: encryption S-box | Row 1: decryption S-box
@@ -143,14 +184,30 @@ private:
                 nibbles[i][j] = apply_sbox(nibbles[i][j], decript);
             }
         }
+        if(debug){
+            cout << "Substituting nibbles:\n= ";
+            print(nibbles);
+            cout << "\n\n";
+        }
     }
 
     // XORs each nibble in the state matrix with the corresponding nibble in the round key
     void add_round_key(vector<vector<int>>& nibbles, vector<vector<int>>& key_vector){
+        if(debug){ 
+            cout << "Adding round key:\n= ";
+            print(nibbles);
+            cout << "  XOR  ";
+            print(key_vector);
+        }
         for(int i=0; i < 2; i++){
             for(int j=0; j < 2; j++){
                 nibbles[i][j] ^= key_vector[i][j];
             }
+        }
+        if(debug){
+            cout << "\n= ";
+            print(nibbles);
+            cout << "\n\n";
         }
     }
 
@@ -158,7 +215,7 @@ private:
         Multiplies the matrix by a fixed basis matrix in GF(2⁴)
         Uses different matrices for encryption and decryption 
     */
-    vector<vector<int>> mix_columns(vector<vector<int>>& matrix, bool decript = false){
+    void mix_columns(vector<vector<int>>& matrix, bool decript = false){
         vector<vector<int>> ans(2, vector<int>(2, 0));
         vector<vector<vector<int>>> mult={{{1, 4}, {4, 1}}, {{9, 2}, {2, 9}}};
         for(int i=0; i < 2; i++){
@@ -168,7 +225,12 @@ private:
                 }
             }
         }
-        return ans;
+        swap(ans, matrix);
+        if(debug){
+            cout << "Mixing Columns:\n= ";
+            print(matrix);
+            cout << "\n\n";
+        }
     }
 
     /*  Applies the g-function from the S-AES key expansion:
@@ -185,6 +247,12 @@ private:
         'round' is the current round number (0-based).
     */
     void expand_key(vector<vector<int>>& key_vector, int round){
+        if(debug){
+            cout << "Expanding Key " << round-1 << " (";
+            print(key_vector);
+            cout << "):\nKey " << round << " = ";
+        }
+        
         vector<int> key1 = { key_vector[0][1], key_vector[1][1] };
         g_function(key1);
 
@@ -196,15 +264,37 @@ private:
 
         // Second new column = first new column XOR previous column
         for(int i=0; i < 2; i++) key_vector[i][1] ^= key_vector[i][0];
+
+        if(debug){
+            print(key_vector);
+            cout << "\n\n";
+        }
+    }
+
+    // convert an integer to a binary string
+    string toBin(int n, int sz){
+        string bits = "";
+        for(int i=sz-1; i >= 0; i--){
+            bits += (char)(((n >> i) & 1) + '0');
+        } 
+        return bits;
+    }
+
+    // convert a binary string to an integer
+    int toInt(string bits, int sz){
+        int num=0;
+        for(int i=sz-1, j=0; i >= 0; i--, j++){
+            if(bits[i] == '1') num |= (1 << j);
+        } 
+        return num;
     }
 
     void print(vector<vector<int>>& key_vector){
         for(int i=0; i < 2; i++){
             for(int j=0; j < 2; j++){
-                cout << key_vector[j][i] << " ";
+                cout << toBin(key_vector[j][i], 4) << " ";
             }
         }
-        cout << endl;
     }
 
 };
