@@ -5,36 +5,55 @@
 #include "ecb.hpp"
 #include "util.hpp"
 
-void input16(int& key, int& message, bool encrypt=true){
+void input16(int& key, int& message, bool encrypt=true, bool ecb_=false){
     int type;
     while(true){
-        cout << "Choose the INPUT format:\n";
+        cout << "Choose the INPUT" << (ecb_ ? " key " : " ") << "format:\n";
         cout << "1 - Binary\n";
         cout << "2 - Hexadecimal\n";
+        cout << "3 - Base64\n";
         cout << "-> ";
         cin >> type;
         cin.ignore();
         cout << endl;
 
         string sKey, sMessage;
+        vector<int> vKey, vMessage;
         switch (type){
             case 1:
-                cout << "Enter the 16-bit key:\n-> ";
+                cout << "Enter the 16-bit key :\n-> ";
                 getline(cin, sKey);
                 key = toInt(sKey);
-                cout << "\nEnter the 16-bit " << (encrypt ? "plaintext" : "ciphertext") << ":\n-> ";
-                getline(cin, sMessage);
-                message = toInt(sMessage);
+                if(!ecb_){
+                    cout << "\nEnter the 16-bit " << (encrypt ? "plaintext" : "ciphertext") << ":\n-> ";
+                    getline(cin, sMessage);
+                    message = toInt(sMessage);
+                }
                 cout << endl;
                 return;
             case 2:
                 printf("Enter the 16-bit key (hexadecimal, e.g., 3A94):\n-> ");
                 scanf("%x", &key);
-                printf("\nEnter the 16-bit %s (hexadecimal, e.g., 6BC1):\n-> ", (encrypt? "plaintext" : "ciphertext"));
-                scanf("%x", &message);
+                if(!ecb_){
+                    printf("\nEnter the 16-bit %s (hexadecimal):\n-> ", (encrypt? "plaintext" : "ciphertext"));
+                    scanf("%x", &message);
+                }
                 printf("\n");
                 return;
-            default: cout << "Opção inválida.\n\n";
+            case 3:
+                cout << "Enter the 16-bit key (base64, e.g., JOw=):\n-> ";
+                getline(cin, sKey);
+                vKey = Base64::convert_from(sKey);
+                key = toInt(vKey);
+                if(!ecb_){
+                    cout << "\nEnter the 16-bit (base64)" << (encrypt ? "plaintext" : "ciphertext") << ":\n-> ";
+                    getline(cin, sMessage);
+                    vMessage = Base64::convert_from(sMessage);
+                    message = toInt(vMessage);
+                }
+                cout << endl;
+                return;
+            default: cout << "Invalid Option.\n\n";
         }
     }
 }
@@ -55,36 +74,53 @@ void s_aes(bool encrypt=true){
     else saes.decrypt(message);
 }
 
+void ecb(bool encrypt=true){
+    int key, nulll;
+    input16(key, nulll, encrypt, true);
+
+    string message;
+    cout << "\nEnter the " << (encrypt ? "plaintext" : "ciphertext") << " in base64:\n-> ";
+    getline(cin, message);
+
+    ECB ecb(key);
+    if(encrypt){
+        cout << "\n====================== S-AES (ECB) - Encryption ======================\n\n";
+        cout << "Ciphertext :   " << ecb.encrypt(message);
+        cout << "\n\n======================================================================\n\n";
+    }   
+    else{
+        cout << "\n====================== S-AES (ECB) - Decryption ======================\n\n";
+        cout << "Plaintext :   " << ecb.decrypt(message);
+        cout << "\n\n======================================================================\n\n";
+    } 
+}
+
 
 int main(){
-    int op;
     while (true) {
         cout << "-------------- S-AES ------------------\n\n";
         cout << "1 - Encrypt 16-bit block with S-AES\n";
         cout << "2 - Decrypt 16-bit block with S-AES\n";
-        cout << "3 - Test full message (ECB)\n";
+        cout << "3 - Encrypt full message (ECB)\n";
+        cout << "4 - Decrypt full message (ECB)\n";
         cout << "0 - Exit\n\nChoose an option: ";
+        int op;
         cin >> op;
         cout << endl;
         
         switch (op) {
             case 1: s_aes(); break;
             case 2: s_aes(false); break;
-            case 3: s_aes(); break;
+            case 3: ecb(); break;
+            case 4: ecb(false); break;
             case 0: return 0;
-            default: cout << "Opção inválida.\n";
+            default: cout << "Invalid option.\n";
         }
-        cout << "\nPressione enter para continuar...\n";
+        cout << "\nPress enter to continue...\n";
         string enter;
         cin.ignore();
         getline(cin, enter);
     }
-
-    // int x = encrypt(28523, 42811);
-    // cout << x << endl;
-    // int r = decrypt(x, 42811);
-    // assert(r == 28523);
-    // cout << r << endl;
 
     // cout << ecb_encrypt("abcd", 42811) << "\n";
 

@@ -54,6 +54,16 @@ int toInt(string bits){
     return num;
 }
 
+// concatenate a vector of 6-bit integers into a single integer
+int toInt(vector<int>& bits){
+    int num = 0;
+    for (int val : bits) {
+        num <<= 8;         // Make room for the next 6 bits
+        num |= (val & 0xFF); // Mask to ensure only 6 bits are used
+    }
+    return num;
+}
+
 // convert a binary string of 16 bits to a vector of bytes
 vector<int> fromBinToVectorByte(string bits){
     int bite1, bite2;

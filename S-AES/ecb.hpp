@@ -27,8 +27,7 @@ public:
         The plaintext is converted to bytes, split into 2-byte blocks, and each block is encrypted (since S-AES.Encrypt works with 16 bits).
         The resulting ciphertext blocks are concatenated and encoded in Base64.
     */
-
-    string encript(string plainText) {
+    string encrypt(string plainText) {
         auto bytes = get_bytes_from_text(plainText);
         assert((int)bytes.size() % 2 == 0);
         
@@ -51,7 +50,7 @@ public:
         The resulting plaintext bytes are concatenated and returned as a string.
     */
 
-    string decript(string cipherText) {
+    string decrypt(string cipherText) {
         vector<int> encrypted_blocks = Base64::convert_from(cipherText);
         vector<int> bytes;
 
