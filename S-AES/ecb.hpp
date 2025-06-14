@@ -20,7 +20,7 @@ public:
     int key;
     SAES saes;
 
-    ECB(int key_) : key(key_), saes(key_) {}
+    ECB(int key_) : key(key_), saes(key_, false, true) {}
 
 
     /*  Encrypts a plaintext string using S-AES in ECB mode.
@@ -37,7 +37,7 @@ public:
         for(int i = 0; i < (int)bytes.size(); i += 2) {
             auto slice = get_vector_slice(bytes, i, 2);
             int num = (slice[0] << 8) + slice[1];
-            int res = saes.encript(num);
+            int res = saes.encrypt(num);
             result.push_back(res >> 8);
             result.push_back(res & 0xFF);
         }
@@ -58,7 +58,7 @@ public:
         for(int i = 0; i < (int)encrypted_blocks.size(); i += 2) {
             int h = encrypted_blocks[i], l = encrypted_blocks[i + 1];
             int res = (h << 8) + l;
-            int dec = saes.decript(res);
+            int dec = saes.decrypt(res);
             bytes.push_back(dec >> 8);
             bytes.push_back(dec & 0xFF);
         }

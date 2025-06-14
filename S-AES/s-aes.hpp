@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 #include "gf16.hpp"
+#include "base64.hpp"
+#include "util.hpp"
 
 using namespace std;
 
@@ -25,16 +27,19 @@ public:
 
     int key;
     bool debug;
+    bool ecb;
     
-    SAES(int key_, bool debug_ = false) : key(key_), debug(debug_) { 
+    SAES(int key_, bool debug_ = false, bool ecb_ = false) : key(key_), debug(debug_), ecb(ecb_) { 
 
     }
 
     // Encrypts a 16-bit plaintext using the S-AES algorithm and the initialized key
-    int encript(int n) {
-        cout << "\n====================== S-AES - Encript ======================\n\n";
-        cout << "Plaintext:         " << toBin(n, 16) << endl;
-        cout << "Initial key:       " << toBin(key, 16) << "\n\n";
+    int encrypt(int n) {
+        if(!ecb){
+            cout << "\n====================== S-AES - Encryption ======================\n\n";
+            cout << "Plaintext:         " << toBin(n, 16) << endl;
+            cout << "Initial key:       " << toBin(key, 16) << "\n\n";
+        }
 
         vector<vector<int>> nibbles = split_to_nibbles(n);
         vector<vector<int>> key_nibbles = split_to_nibbles(this->key);
@@ -64,21 +69,27 @@ public:
             }
         }
 
-        cout << "-------------------------------------------------------------\n\n";
-        cout << "-> Ciphertext\n\n";
-        cout << "Bin:               ";
-        print(nibbles);
-        printf("\nHex:               %X\n", ciphertext);
-        cout << "\n=============================================================\n\n";
+        if(!ecb){
+            cout << "-------------------------------------------------------------\n\n";
+            cout << "-> Ciphertext\n\n";
+            cout << "Bin:               ";
+            print(nibbles);
+            printf("\nHex:               %X\n", ciphertext);
+            auto bytes = fromBinToVectorByte(toBin(nibbles));
+            cout << "Base64:            " << Base64::convert_to(bytes);
+            cout << "\n=============================================================\n\n";
+        }
 
         return ciphertext;
     }
 
     // Decrypts a 16-bit ciphertext using the S-AES algorithm and the initialized key
-    int decript(int n){
-        cout << "\n====================== S-AES - Decript ======================\n\n";
-        cout << "Ciphertext:        " << toBin(n, 16) << endl;
-        cout << "Initial key:       " << toBin(key, 16) << "\n\n";
+    int decrypt(int n){
+        if(!ecb){
+            cout << "\n====================== S-AES - Decryption ======================\n\n";
+            cout << "Ciphertext:        " << toBin(n, 16) << endl;
+            cout << "Initial key:       " << toBin(key, 16) << "\n\n";
+        }
 
         vector<vector<int>> nibbles = split_to_nibbles(n);
 
@@ -122,12 +133,16 @@ public:
             }
         }
         
-        cout << "-------------------------------------------------------------\n\n";
-        cout << "-> Plaintext\n\n";
-        cout << "Bin:               ";
-        print(nibbles);
-        printf("\nHex:               %X\n", plaintext);
-        cout << "\n=============================================================\n\n";
+        if(!ecb){
+            cout << "-------------------------------------------------------------\n\n";
+            cout << "-> Plaintext\n\n";
+            cout << "Bin:               ";
+            print(nibbles);
+            printf("\nHex:               %X\n", plaintext);
+            auto bytes = fromBinToVectorByte(toBin(nibbles));
+            cout << "Base64:            " << Base64::convert_to(bytes);
+            cout << "\n=============================================================\n\n";
+        }
 
         return plaintext;
     }
@@ -167,21 +182,21 @@ private:
     }
 
     // Applies the S-box substitution on a 4-bit nibble
-    int apply_sbox(int nibble, bool decript = false){
+    int apply_sbox(int nibble, bool decrypt = false){
         // Row 0: encryption S-box | Row 1: decryption S-box
         vector<vector<int>> sbox_nibble = {
             {9, 4, 10, 11, 13, 1, 8, 5, 6, 2, 0, 3, 12, 14, 15, 7},
             {10, 5, 9, 11, 1, 7, 8, 15, 6, 0, 2, 3, 12, 4, 13, 14}
         };
-        return sbox_nibble[decript][nibble];
+        return sbox_nibble[decrypt][nibble];
     }
 
     // Applies the S-box transformation to each nibble in the 2×2 state matrix
     // Uses encryption S-box by default; decryption if 'decrypt' is true
-    void sub_nibbles(vector<vector<int>>& nibbles, bool decript = false){
+    void sub_nibbles(vector<vector<int>>& nibbles, bool decrypt = false){
         for(int i=0; i < 2; i++){
             for(int j=0; j < 2; j++){
-                nibbles[i][j] = apply_sbox(nibbles[i][j], decript);
+                nibbles[i][j] = apply_sbox(nibbles[i][j], decrypt);
             }
         }
         if(debug){
@@ -215,13 +230,13 @@ private:
         Multiplies the matrix by a fixed basis matrix in GF(2⁴)
         Uses different matrices for encryption and decryption 
     */
-    void mix_columns(vector<vector<int>>& matrix, bool decript = false){
+    void mix_columns(vector<vector<int>>& matrix, bool decrypt = false){
         vector<vector<int>> ans(2, vector<int>(2, 0));
         vector<vector<vector<int>>> mult={{{1, 4}, {4, 1}}, {{9, 2}, {2, 9}}};
         for(int i=0; i < 2; i++){
             for(int j=0; j < 2; j++){
                 for(int k=0; k < 2; k++){
-                    ans[i][j] ^= GF.mul(mult[decript][i][k], matrix[k][j]);
+                    ans[i][j] ^= GF.mul(mult[decrypt][i][k], matrix[k][j]);
                 }
             }
         }
@@ -270,33 +285,6 @@ private:
             cout << "\n\n";
         }
     }
-
-    // convert an integer to a binary string
-    string toBin(int n, int sz){
-        string bits = "";
-        for(int i=sz-1; i >= 0; i--){
-            bits += (char)(((n >> i) & 1) + '0');
-        } 
-        return bits;
-    }
-
-    // convert a binary string to an integer
-    int toInt(string bits, int sz){
-        int num=0;
-        for(int i=sz-1, j=0; i >= 0; i--, j++){
-            if(bits[i] == '1') num |= (1 << j);
-        } 
-        return num;
-    }
-
-    void print(vector<vector<int>>& key_vector){
-        for(int i=0; i < 2; i++){
-            for(int j=0; j < 2; j++){
-                cout << toBin(key_vector[j][i], 4) << " ";
-            }
-        }
-    }
-
 };
 
 #endif
