@@ -38,6 +38,7 @@ void input16(int& key, int& message, bool encrypt=true, bool ecb_=false){
                     printf("\nEnter the 16-bit %s (hexadecimal):\n-> ", (encrypt? "plaintext" : "ciphertext"));
                     scanf("%x", &message);
                 }
+                cin.ignore();
                 printf("\n");
                 return;
             case 3:
@@ -66,6 +67,7 @@ void s_aes(bool encrypt=true){
     bool debug=true;
     cout << "Do you want to enable debug mode? (y/n): ";
     cin >> choice;
+    cin.ignore();
     cout << endl;
     if(choice == 'n' || choice == 'N') debug = false;
 
@@ -118,7 +120,6 @@ int main(){
         }
         cout << "\nPress enter to continue...\n";
         string enter;
-        cin.ignore();
         getline(cin, enter);
     }
 
