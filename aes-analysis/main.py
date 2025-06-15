@@ -121,10 +121,10 @@ iv = bytes.fromhex('7ac4b2b76533f1a702de0c1660192bfb')
 nonce = bytes.fromhex('6102500a1e90abcab67f620d')
 
 files = [
-    'messages/hex/16_bytes',
-    'messages/hex/4096_bytes',
-    'messages/hex/1048576_bytes',
-    'messages/hex/268435456_bytes',
+    '../messages/hex/16_bytes',
+    '../messages/hex/4096_bytes',
+    '../messages/hex/1048576_bytes',
+    '../messages/hex/268435456_bytes',
 ]
 
 with open(files[0], 'r') as f:
