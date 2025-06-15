@@ -19,10 +19,10 @@ def decrypt_cbc(key, iv, ciphertext):
 
 
 def encrypt_cfb(key, iv, message):
-    return AES.new(key, AES.MODE_CFB, iv).encrypt(message)
+    return AES.new(key, AES.MODE_CFB, iv, segment_size = 128).encrypt(message)
 
 def decrypt_cfb(key, iv, ciphertext):
-    return AES.new(key, AES.MODE_CFB, iv).decrypt(ciphertext)
+    return AES.new(key, AES.MODE_CFB, iv, segment_size = 128).decrypt(ciphertext)
 
 
 def encrypt_ofb(key, iv, message):
