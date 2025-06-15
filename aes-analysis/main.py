@@ -112,17 +112,28 @@ def test_mode(key, message, mode, iv = None, nonce = None, debug_texts = False):
     assert dec_text == message
     print("Test passed!\n")
 
-key = get_random_bytes(16)
-iv = get_random_bytes(16)
-nonce = get_random_bytes(12)
+# key = get_random_bytes(16)
+# iv = get_random_bytes(16)
+# nonce = get_random_bytes(12)
 
-message_len = 10
-message = get_random_bytes(16 * message_len) # tem que ser multiplo do tamanho do bloco (16 bytes)
+key = bytes.fromhex('af3ff749bbfd9a8a3dc791b2cceb193c')
+iv = bytes.fromhex('7ac4b2b76533f1a702de0c1660192bfb')
+nonce = bytes.fromhex('6102500a1e90abcab67f620d')
 
-print_bytes("Key", key.hex())
-print_bytes("Message", message.hex())
-print_bytes("IV", iv.hex())
-print_bytes("Nonce", nonce.hex())
+files = [
+    'messages/hex/16_bytes',
+    'messages/hex/4096_bytes',
+    'messages/hex/1048576_bytes',
+    'messages/hex/268435456_bytes',
+]
+
+with open(files[0], 'r') as f:
+    message = bytes.fromhex(f.read().strip())
+
+# print_bytes("Key", key.hex())
+# print_bytes("Message", message.hex())
+# print_bytes("IV", iv.hex())
+# print_bytes("Nonce", nonce.hex())
 
 print()
 
