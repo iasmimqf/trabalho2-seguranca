@@ -81,8 +81,20 @@ void ecb(bool encrypt=true){
     input16(key, nulll, encrypt, true);
 
     string message;
-    cout << "\nEnter the " << (encrypt ? "plaintext" : "ciphertext") << " in base64:\n-> ";
-    getline(cin, message);
+
+    if(encrypt) {
+        cout << "\nEnter the plaintext:\n-> ";
+        getline(cin, message);
+
+    } else {
+        cout << "\nEnter the ciphertext in base64:\n-> ";
+        getline(cin, message);
+        if((int)message.size() % 4 != 0) {
+            cout << "Error: ";
+            cout << "The length of the base64 string must be a multiple of 4.\n";
+            exit(0);
+        }
+    }
 
     ECB ecb(key);
     if(encrypt){
