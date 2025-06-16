@@ -3,15 +3,25 @@ using namespace std;
 #ifndef GF16
 #define GF16
 
-/*  This struct implements arithmetic over the finite field GF(2^4)
-    using the irreducible polynomial x⁴ + x + 1 (binary: 10011, decimal: 19)
-    The field has 16 elements (0–15), and addition/multiplication are
-    performed using polynomial arithmetic modulo the primitive polynomial
-    **Addition in GF(2^4) is just a bitwise XOR
-*/
+/**
+ * @struct GF_16
+ * @brief Implements arithmetic in the finite field GF(2^4) defined by the irreducible polynomial x⁴ + x + 1.
+ *
+ * @details
+ * The field GF(2^4) has 16 elements represented as 4-bit numbers (0 to 15).
+ * Arithmetic operations are done modulo the primitive polynomial x⁴ + x + 1
+ * (binary representation 10011, decimal 19).
+ *
+ * Addition in GF(2^4) corresponds to bitwise XOR.
+ * Multiplication is polynomial multiplication modulo the primitive polynomial.
+ */
 struct GF_16 {
-    // Reduces a polynomial (as an int) modulo x⁴ + x + 1
-    // Assumes input x may be up to degree 6
+    /**
+     * @brief Reduces a polynomial (represented as an integer) modulo the primitive polynomial x⁴ + x + 1.
+     *
+     * @param x Polynomial to reduce, possibly up to degree 6 (bits beyond 3).
+     * @return The reduced polynomial as an integer within GF(2^4) (4 bits).
+     */
     int mod(int x) {
         // Start with the part of x that already fits in GF(16) (degree ≤ 3)
         int ans = x & 0b1111;  // Keep lower 4 bits
@@ -28,7 +38,13 @@ struct GF_16 {
         return ans;
     }
 
-    // Multiplies two polynomials in GF(2⁴)
+    /**
+     * @brief Multiplies two polynomials in GF(2^4).
+     *
+     * @param x First polynomial operand (4-bit integer).
+     * @param y Second polynomial operand (4-bit integer).
+     * @return The product modulo the primitive polynomial as a 4-bit integer.
+    */
     int mul(int x, int y) {
         int ans = 0;
 

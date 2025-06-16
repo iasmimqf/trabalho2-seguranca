@@ -134,44 +134,4 @@ int main(){
         string enter;
         getline(cin, enter);
     }
-
-    // cout << ecb_encrypt("abcd", 42811) << "\n";
-
-    // SAES saes(11, true);
-    // saes.encrypt(1);
-
-    // string bites = "10100011001";
-    // vector<int> v = get_bytes_from_text(bites);
-    // for(int x : v) cout << x << " ";
-    // cout << endl;
-
-    // ECB ecb(42811);
-
-    // auto k = ecb.encript("AbCdEfGh");
-    // cout << "encrypt: " << k << "\n";
-
-    // auto r = ecb.decript(k);
-    // cout << "decrypt: " << r << "\n";
-
-    // cout << convert_to_base64(vector<int>{155}) << endl;                // -> mw==
-    // cout << convert_to_base64(vector<int>{155, 162}) << endl;           // -> m6I=
-    // cout << convert_to_base64(vector<int>{155, 162, 233}) << endl;      // -> m6Lp
-    
-    // cout << convert_to_base64(vector<int>{1}) << endl;                  // -> AQ==
-    // cout << convert_to_base64(vector<int>{1, 2}) << endl;               // -> AQI=
-    // cout << convert_to_base64(vector<int>{1, 2, 3}) << endl;            // -> AQID
-
-    // cout << convert_to_base64(vector<int>{255}) << endl;                // -> /w==
-    // cout << convert_to_base64(vector<int>{255, 255}) << endl;           // -> //8=
-    // cout << convert_to_base64(vector<int>{255, 255, 255}) << endl;      // -> ////
-
-    // cout << convert_to_base64(vector<int>{0}) << endl;                  // -> AA==
-    // cout << convert_to_base64(vector<int>{0, 0}) << endl;               // -> AAA=
-    // cout << convert_to_base64(vector<int>{0, 0, 0}) << endl;            // -> AAAA
- 
-    // cout << convert_to_base64(vector<int>{17, 41, 78, 149}) << "\n";    // ESlOlQ==
-
-    // cout << convert_to_base64(get_bytes_from_text("Man is distinguished, not only by his reason, but ...")) << "\n";
-    // TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCAuLi4=
-
 }

@@ -9,19 +9,16 @@ using namespace std;
 #ifndef SAES_H
 #define SAES_H
 
-/*
-    Implements the S-AES (Simplified AES) encryption and decryption process
-    using a 16-bit key and 16-bit plaintext/ciphertext blocks.
-
-    The cipher includes:
-    - SubNib (S-box substitution for each 4-bit nibble)
-    - ShiftRows (row-wise permutation)
-    - MixColumns (matrix multiplication in GF(2⁴))
-    - AddRoundKey (XOR with round key)
-    - Key expansion based on g-function and round constants
-
-    Supports step-by-step debugging output.
-*/
+/**
+ * @class SAES
+ * @brief Implements the S-AES (Simplified AES) encryption and decryption algorithm.
+ * 
+ * @details S-AES operates on 16-bit plaintext and ciphertext blocks using a 16-bit key.
+ * The algorithm includes SubNibbles (S-box substitution), ShiftRows (permutation), 
+ * MixColumns (matrix multiplication in GF(2⁴)), AddRoundKey (XOR with round key), 
+ * and key expansion with round constants. The class supports optional debugging output
+ * and integrates with ECB mode through an external wrapper.
+ */
 class SAES {
 public:
 
@@ -29,17 +26,36 @@ public:
     bool debug;
     bool ecb;
     
+    /**
+     * @brief Constructs an instance of the S-AES cipher with the specified key and flags.
+     * 
+     * @param key_ The 16-bit encryption key.
+     * @param debug_ Optional flag to enable debugging output (default: false).
+     * @param ecb_ Optional flag to indicate ECB mode usage (default: false).
+     */
     SAES(int key_, bool debug_ = false, bool ecb_ = false) : key(key_), debug(debug_), ecb(ecb_) { 
 
     }
 
-    // Encrypts a 16-bit plaintext using the S-AES algorithm and the initialized key
+    /**
+     * @brief Encrypts a 16-bit plaintext block using the S-AES algorithm.
+     * 
+     * @details The plaintext is processed through 2 encryption rounds:
+     * - Round 0: AddRoundKey
+     * - Round 1: SubNibbles, ShiftRows, MixColumns, AddRoundKey
+     * - Round 2: SubNibbles, ShiftRows, AddRoundKey
+     * 
+     * Intermediate results may be displayed if debugging is enabled.
+     * 
+     * @param n The 16-bit plaintext block to encrypt.
+     * @return The 16-bit ciphertext block resulting from encryption.
+     */
     int encrypt(int n) {
         if(!ecb){
             cout << "\n====================== S-AES - Encryption ======================\n\n";
             cout << "Plaintext:         " << toBin(n, 16) << endl;
             cout << "Initial key:       " << toBin(key, 16) << "\n\n";
-        }
+        }   
 
         vector<vector<int>> nibbles = split_to_nibbles(n);
         vector<vector<int>> key_nibbles = split_to_nibbles(this->key);
@@ -83,7 +99,19 @@ public:
         return ciphertext;
     }
 
-    // Decrypts a 16-bit ciphertext using the S-AES algorithm and the initialized key
+    /**
+     * @brief Decrypts a 16-bit ciphertext block using the S-AES algorithm.
+     * 
+     * @details The ciphertext is processed through 2 decryption rounds (inverse operations):
+     * - Round 2: AddRoundKey, InverseShiftRows, InverseSubNibbles
+     * - Round 1: AddRoundKey, InverseMixColumns, InverseShiftRows, InverseSubNibbles
+     * - Round 0: AddRoundKey
+     * 
+     * Round keys are expanded before decryption. Intermediate results may be shown if debugging is enabled.
+     * 
+     * @param n The 16-bit ciphertext block to decrypt.
+     * @return The 16-bit plaintext block resulting from decryption.
+     */
     int decrypt(int n){
         if(!ecb){
             cout << "\n====================== S-AES - Decryption ======================\n\n";
@@ -171,41 +199,7 @@ private:
         }
         return nibbles;
     }
-
-    void shift_rows(vector<vector<int>>& nibbles){
-        swap(nibbles[1][0], nibbles[1][1]);
-        if(debug){
-            cout << "Shifting rows:\n= ";
-            print(nibbles);
-            cout << "\n\n";
-        }
-    }
-
-    // Applies the S-box substitution on a 4-bit nibble
-    int apply_sbox(int nibble, bool decrypt = false){
-        // Row 0: encryption S-box | Row 1: decryption S-box
-        vector<vector<int>> sbox_nibble = {
-            {9, 4, 10, 11, 13, 1, 8, 5, 6, 2, 0, 3, 12, 14, 15, 7},
-            {10, 5, 9, 11, 1, 7, 8, 15, 6, 0, 2, 3, 12, 4, 13, 14}
-        };
-        return sbox_nibble[decrypt][nibble];
-    }
-
-    // Applies the S-box transformation to each nibble in the 2×2 state matrix
-    // Uses encryption S-box by default; decryption if 'decrypt' is true
-    void sub_nibbles(vector<vector<int>>& nibbles, bool decrypt = false){
-        for(int i=0; i < 2; i++){
-            for(int j=0; j < 2; j++){
-                nibbles[i][j] = apply_sbox(nibbles[i][j], decrypt);
-            }
-        }
-        if(debug){
-            cout << "Substituting nibbles:\n= ";
-            print(nibbles);
-            cout << "\n\n";
-        }
-    }
-
+    
     // XORs each nibble in the state matrix with the corresponding nibble in the round key
     void add_round_key(vector<vector<int>>& nibbles, vector<vector<int>>& key_vector){
         if(debug){ 
@@ -225,6 +219,41 @@ private:
             cout << "\n\n";
         }
     }
+    
+    // Applies the S-box substitution on a 4-bit nibble
+    int apply_sbox(int nibble, bool decrypt = false){
+        // Row 0: encryption S-box | Row 1: decryption S-box
+        vector<vector<int>> sbox_nibble = {
+            {9, 4, 10, 11, 13, 1, 8, 5, 6, 2, 0, 3, 12, 14, 15, 7},
+            {10, 5, 9, 11, 1, 7, 8, 15, 6, 0, 2, 3, 12, 4, 13, 14}
+        };
+        return sbox_nibble[decrypt][nibble];
+    }
+    
+    // Applies the S-box transformation to each nibble in the 2×2 state matrix
+    // Uses encryption S-box by default; decryption if 'decrypt' is true
+    void sub_nibbles(vector<vector<int>>& nibbles, bool decrypt = false){
+        for(int i=0; i < 2; i++){
+            for(int j=0; j < 2; j++){
+                nibbles[i][j] = apply_sbox(nibbles[i][j], decrypt);
+            }
+        }
+        if(debug){
+            cout << "Substituting nibbles:\n= ";
+            print(nibbles);
+            cout << "\n\n";
+        }
+    }
+    
+    // Shift the second row (swapping the first and second nibble)
+    void shift_rows(vector<vector<int>>& nibbles){
+        swap(nibbles[1][0], nibbles[1][1]);
+        if(debug){
+            cout << "Shifting rows:\n= ";
+            print(nibbles);
+            cout << "\n\n";
+        }
+    }
 
     /*  Performs the MixColumns step on the 2×2 state matrix
         Multiplies the matrix by a fixed basis matrix in GF(2⁴)
@@ -232,7 +261,10 @@ private:
     */
     void mix_columns(vector<vector<int>>& matrix, bool decrypt = false){
         vector<vector<int>> ans(2, vector<int>(2, 0));
-        vector<vector<vector<int>>> mult={{{1, 4}, {4, 1}}, {{9, 2}, {2, 9}}};
+        vector<vector<vector<int>>> mult={
+            {{1, 4}, {4, 1}},  // encription matrix
+            {{9, 2}, {2, 9}}   // decription matrix
+        };
         for(int i=0; i < 2; i++){
             for(int j=0; j < 2; j++){
                 for(int k=0; k < 2; k++){

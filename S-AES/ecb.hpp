@@ -10,23 +10,37 @@
 
 using namespace std;
 
-/*  ECB (Electronic Codebook) mode encryption class for S-AES.
-    This class provides methods to encrypt and decrypt data using the S-AES cipher in ECB mode.
-    The class uses Base64 encoding for output and input of ciphertext.
-*/
-
+/**
+ * @class ECB
+ * @brief ECB (Electronic Codebook) mode encryption class for S-AES.
+ * 
+ * @details This class provides methods to encrypt and decrypt data using the S-AES
+ * cipher in ECB mode. The encryption and decryption processes operate on 16-bit blocks,
+ * and the class uses Base64 encoding for output and input of ciphertext.
+ */
 class ECB {
 public:
     int key;
     SAES saes;
 
+    /**
+     * @brief Constructs an ECB mode encryption object with the given key.
+     * 
+     * @param key_ The 16-bit integer key used to initialize the S-AES cipher.
+     */
     ECB(int key_) : key(key_), saes(key_, false, true) {}
 
-
-    /*  Encrypts a plaintext string using S-AES in ECB mode.
-        The plaintext is converted to bytes, split into 2-byte blocks, and each block is encrypted (since S-AES.Encrypt works with 16 bits).
-        The resulting ciphertext blocks are concatenated and encoded in Base64.
-    */
+    /**
+     * @brief Encrypts a plaintext string using S-AES in ECB mode.
+     * 
+     * @details The plaintext is first converted into bytes, 
+     * then split into 16-bit (2-byte) blocks.
+     * Each block is encrypted using S-AES, and the resulting 
+     * ciphertext is concatenated and encoded in Base64.
+     * 
+     * @param plaintext The input string to be encrypted.
+     * @return A Base64-encoded string representing the ciphertext.
+     */
     string encrypt(string plainText) {
         auto bytes = get_bytes_from_text(plainText);
         assert((int)bytes.size() % 2 == 0);
@@ -45,11 +59,16 @@ public:
     }
 
 
-    /*  Decrypts a Base64-encoded ciphertext string using S-AES in ECB mode.
-        The ciphertext is decoded from Base64, split into 2-byte blocks, and each block is decrypted.
-        The resulting plaintext bytes are concatenated and returned as a string.
-    */
-
+   /**
+     * @brief Decrypts a Base64-encoded ciphertext using the S-AES in ECB mode.
+     * 
+     * @details The input ciphertext is first decoded from Base64 to obtain the raw encrypted bytes.
+     * These bytes are grouped into 16-bit (2-byte) blocks, and each block is decrypted using S-AES.
+     * The resulting plaintext bytes are concatenated and returned as a standard string.
+     * 
+     * @param cipherText The Base64-encoded ciphertext string to be decrypted.
+     * @return The decrypted plaintext as a string.
+     */
     string decrypt(string cipherText) {
         vector<int> encrypted_blocks = Base64::convert_from(cipherText);
         vector<int> bytes;
